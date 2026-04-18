@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: devops-dashboard
+  labels:
+    app.kubernetes.io/part-of: devops-dashboard
+    app.kubernetes.io/managed-by: kubectl

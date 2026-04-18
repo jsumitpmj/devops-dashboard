@@ -1,0 +1,212 @@
+# =============================================================================
+# DevOps Dashboard Platform — Docker Compose (Local Development)
+# =============================================================================
+# Usage:
+#   docker compose up --build        # Build and start everything
+#   docker compose up -d             # Detached mode
+#   docker compose logs -f api       # Follow logs for one service
+#   docker compose down -v           # Stop and remove volumes (clean slate)
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 18
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:18-alpine
+    container_name: devops-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-devops}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-devops}
+      POSTGRES_DB: ${DB_NAME:-devops_dashboard}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/db/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+      - ./scripts/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devops -d devops_dashboard"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # ---------------------------------------------------------------------------
+  # API Service (Java / Spring Boot) — port 4000
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    container_name: devops-api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-4000}:4000"
+    environment:
+      PORT: 4000
+      DATABASE_URL: jdbc:postgresql://postgres:5432/devops_dashboard
+      DB_USER: ${DB_USER:-devops}
+      DB_PASSWORD: ${DB_PASSWORD:-devops}
+      JWT_SECRET: ${JWT_SECRET:-docker-dev-secret-minimum-32-characters-long}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ---------------------------------------------------------------------------
+  # Auth Service — port 4001
+  # ---------------------------------------------------------------------------
+  auth:
+    build:
+      context: .
+      dockerfile: services/auth/Dockerfile
+    container_name: devops-auth
+    restart: unless-stopped
+    ports:
+      - "${AUTH_PORT:-4001}:4001"
+    environment:
+      PORT: 4001
+      DATABASE_URL: jdbc:postgresql://postgres:5432/devops_dashboard
+      DB_USER: ${DB_USER:-devops}
+      DB_PASSWORD: ${DB_PASSWORD:-devops}
+      JWT_SECRET: ${JWT_SECRET:-docker-dev-secret-minimum-32-characters-long}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4001/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ---------------------------------------------------------------------------
+  # Deployment Service — port 4002
+  # ---------------------------------------------------------------------------
+  deployment:
+    build:
+      context: .
+      dockerfile: services/deployment/Dockerfile
+    container_name: devops-deployment
+    restart: unless-stopped
+    ports:
+      - "${DEPLOYMENT_PORT:-4002}:4002"
+    environment:
+      PORT: 4002
+      DATABASE_URL: jdbc:postgresql://postgres:5432/devops_dashboard
+      DB_USER: ${DB_USER:-devops}
+      DB_PASSWORD: ${DB_PASSWORD:-devops}
+      JWT_SECRET: ${JWT_SECRET:-docker-dev-secret-minimum-32-characters-long}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4002/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ---------------------------------------------------------------------------
+  # Notification Service — port 4003
+  # ---------------------------------------------------------------------------
+  notification:
+    build:
+      context: .
+      dockerfile: services/notification/Dockerfile
+    container_name: devops-notification
+    restart: unless-stopped
+    ports:
+      - "${NOTIFICATION_PORT:-4003}:4003"
+    environment:
+      PORT: 4003
+      DATABASE_URL: jdbc:postgresql://postgres:5432/devops_dashboard
+      DB_USER: ${DB_USER:-devops}
+      DB_PASSWORD: ${DB_PASSWORD:-devops}
+      JWT_SECRET: ${JWT_SECRET:-docker-dev-secret-minimum-32-characters-long}
+      NOTIFICATION_EMAIL_ENABLED: ${NOTIFICATION_EMAIL_ENABLED:-false}
+      NOTIFICATION_SLACK_ENABLED: ${NOTIFICATION_SLACK_ENABLED:-false}
+      NOTIFICATION_SLACK_WEBHOOK: ${NOTIFICATION_SLACK_WEBHOOK:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4003/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ---------------------------------------------------------------------------
+  # Worker Service — port 4004
+  # ---------------------------------------------------------------------------
+  worker:
+    build:
+      context: .
+      dockerfile: services/worker/Dockerfile
+    container_name: devops-worker
+    restart: unless-stopped
+    ports:
+      - "${WORKER_PORT:-4004}:4004"
+    environment:
+      PORT: 4004
+      DATABASE_URL: jdbc:postgresql://postgres:5432/devops_dashboard
+      DB_USER: ${DB_USER:-devops}
+      DB_PASSWORD: ${DB_PASSWORD:-devops}
+      JWT_SECRET: ${JWT_SECRET:-docker-dev-secret-minimum-32-characters-long}
+      POLL_INTERVAL_MS: ${POLL_INTERVAL_MS:-30000}
+      WORKER_STALE_TIMEOUT_MINS: ${WORKER_STALE_TIMEOUT_MINS:-30}
+      WORKER_SYNC_INTERVAL_MS: ${WORKER_SYNC_INTERVAL_MS:-60000}
+      NOTIFICATION_SERVICE_URL: http://notification:4003
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      notification:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4004/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ---------------------------------------------------------------------------
+  # Frontend (Next.js) — port 3000
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: devops-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://api:4000
+      NEXT_PUBLIC_AUTH_URL: http://auth:4001
+    depends_on:
+      api:
+        condition: service_healthy
+      auth:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  pgdata:
+    driver: local

@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: devops-config
+  namespace: devops-dashboard
+  labels:
+    app.kubernetes.io/part-of: devops-dashboard
+data:
+  # ---- Database ----
+  DATABASE_URL: "jdbc:postgresql://postgres:5432/devops_dashboard"
+  DB_USER: "devops"
+
+  # ---- Service ports ----
+  API_PORT: "4000"
+  AUTH_PORT: "4001"
+  DEPLOYMENT_PORT: "4002"
+  NOTIFICATION_PORT: "4003"
+  WORKER_PORT: "4004"
+  FRONTEND_PORT: "3000"
+
+  # ---- JWT ----
+  JWT_EXPIRATION_MS: "86400000"
+
+  # ---- Worker ----
+  POLL_INTERVAL_MS: "30000"
+  WORKER_STALE_TIMEOUT_MINS: "30"
+  WORKER_SYNC_INTERVAL_MS: "60000"
+  NOTIFICATION_SERVICE_URL: "http://notification:4003"
+
+  # ---- Notification ----
+  NOTIFICATION_EMAIL_ENABLED: "false"
+  NOTIFICATION_EMAIL_FROM: "noreply@devops-dashboard.local"
+  NOTIFICATION_SMTP_HOST: "localhost"
+  NOTIFICATION_SMTP_PORT: "587"
+  NOTIFICATION_SLACK_ENABLED: "false"
+
+  # ---- Logging ----
+  LOG_LEVEL: "info"

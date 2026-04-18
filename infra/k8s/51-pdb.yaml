@@ -1,0 +1,55 @@
+# =============================================================================
+# Pod Disruption Budgets
+# =============================================================================
+# Ensure at least 1 pod is always available during voluntary disruptions
+# (node drains, cluster upgrades, etc.)
+#
+# Not applied to: worker (single replica), notification (single replica)
+# =============================================================================
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api-pdb
+  namespace: devops-dashboard
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: api
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: auth-pdb
+  namespace: devops-dashboard
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: auth
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: deployment-svc-pdb
+  namespace: devops-dashboard
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: deployment-svc
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: frontend-pdb
+  namespace: devops-dashboard
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: frontend

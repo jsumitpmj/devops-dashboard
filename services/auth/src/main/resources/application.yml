@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: auth
+
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/devops_dashboard}
+    username: ${DB_USER:devops}
+    password: ${DB_PASSWORD:devops}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 15
+      minimum-idle: 5
+      idle-timeout: 30000
+      connection-timeout: 5000
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null
+
+server:
+  port: ${PORT:4001}
+
+jwt:
+  secret: ${JWT_SECRET:change-me-in-production-must-be-at-least-32-chars}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+app:
+  version: ${SERVICE_VERSION:1.0.0}
+
+logging:
+  level:
+    root: ${LOG_LEVEL:info}
+    com.devops.dashboard: debug

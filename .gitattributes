@@ -1,0 +1,37 @@
+# =============================================================================
+# Cross-platform line endings
+# =============================================================================
+# Ensures consistent LF endings in the repo regardless of OS.
+# Windows users: Git will auto-convert to CRLF on checkout, LF on commit.
+# Linux/macOS users: Git stores and checks out as LF.
+
+# Default: auto-detect
+* text=auto
+
+# Force LF for scripts and config (critical for Docker / Linux containers)
+*.sh        text eol=lf
+*.sql       text eol=lf
+*.yaml      text eol=lf
+*.yml       text eol=lf
+*.json      text eol=lf
+*.md        text eol=lf
+*.ts        text eol=lf
+*.tsx       text eol=lf
+*.css       text eol=lf
+*.java      text eol=lf
+*.xml       text eol=lf
+*.properties text eol=lf
+Dockerfile  text eol=lf
+
+# Force CRLF for Windows-only scripts
+*.ps1       text eol=crlf
+*.cmd       text eol=crlf
+*.bat       text eol=crlf
+
+# Binary files
+*.png       binary
+*.jpg       binary
+*.gif       binary
+*.ico       binary
+*.jar       binary
+*.class     binary

@@ -1,0 +1,124 @@
+# =============================================================================
+# Network Policies — Restrict inter-service traffic
+# =============================================================================
+# Rules:
+#   - All pods can reach PostgreSQL
+#   - Frontend can reach API + Auth
+#   - Worker can reach Notification + PostgreSQL
+#   - Only Ingress can reach Frontend
+#   - All backend pods accept traffic from Ingress on their ports
+# =============================================================================
+
+# Default: deny all ingress within the namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: devops-dashboard
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+
+---
+# Allow all pods to reach PostgreSQL
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-postgres
+  namespace: devops-dashboard
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: postgres
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: devops-dashboard
+      ports:
+        - port: 5432
+
+---
+# Allow Ingress → Frontend
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-frontend
+  namespace: devops-dashboard
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: frontend
+  ingress:
+    - ports:
+        - port: 3000
+
+---
+# Allow Ingress → API
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-api
+  namespace: devops-dashboard
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: api
+  ingress:
+    - ports:
+        - port: 4000
+
+---
+# Allow Ingress → Auth
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-auth
+  namespace: devops-dashboard
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: auth
+  ingress:
+    - ports:
+        - port: 4001
+
+---
+# Allow Worker → Notification (internal REST calls)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-worker-to-notification
+  namespace: devops-dashboard
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: notification
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: worker
+      ports:
+        - port: 4003
+
+---
+# Allow all backend pods to receive health check probes from kubelet
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-health-probes
+  namespace: devops-dashboard
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: devops-dashboard
+  ingress:
+    - ports:
+        - port: 3000
+        - port: 4000
+        - port: 4001
+        - port: 4002
+        - port: 4003
+        - port: 4004

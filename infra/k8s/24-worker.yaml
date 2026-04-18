@@ -1,0 +1,138 @@
+# =============================================================================
+# Worker Service — Deployment + Service
+# =============================================================================
+# The worker runs background polling jobs. It should have only 1 replica
+# to avoid duplicate processing. The Service is exposed only for /health
+# and /worker/stats monitoring.
+# =============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: worker
+  namespace: devops-dashboard
+  labels:
+    app.kubernetes.io/name: worker
+    app.kubernetes.io/part-of: devops-dashboard
+    app.kubernetes.io/component: backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 4004
+      targetPort: 4004
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: worker
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: devops-dashboard
+  labels:
+    app.kubernetes.io/name: worker
+    app.kubernetes.io/part-of: devops-dashboard
+    app.kubernetes.io/component: backend
+spec:
+  # IMPORTANT: Keep at 1 to avoid duplicate job processing.
+  # For HA, implement leader election or use a distributed lock.
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: worker
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: worker
+        app.kubernetes.io/part-of: devops-dashboard
+        app.kubernetes.io/component: backend
+    spec:
+      containers:
+        - name: worker
+          image: devops-dashboard/worker:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4004
+              name: http
+          env:
+            - name: PORT
+              value: "4004"
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: devops-config
+                  key: DATABASE_URL
+            - name: DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: devops-config
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: devops-secrets
+                  key: DB_PASSWORD
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: devops-secrets
+                  key: JWT_SECRET
+            - name: POLL_INTERVAL_MS
+              valueFrom:
+                configMapKeyRef:
+                  name: devops-config
+                  key: POLL_INTERVAL_MS
+            - name: WORKER_STALE_TIMEOUT_MINS
+              valueFrom:
+                configMapKeyRef:
+                  name: devops-config
+                  key: WORKER_STALE_TIMEOUT_MINS
+            - name: WORKER_SYNC_INTERVAL_MS
+              valueFrom:
+                configMapKeyRef:
+                  name: devops-config
+                  key: WORKER_SYNC_INTERVAL_MS
+            - name: NOTIFICATION_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: devops-config
+                  key: NOTIFICATION_SERVICE_URL
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: devops-config
+                  key: LOG_LEVEL
+          resources:
+            requests:
+              cpu: 150m
+              memory: 320Mi
+            limits:
+              cpu: 500m
+              memory: 640Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 45
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 15

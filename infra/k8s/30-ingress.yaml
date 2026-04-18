@@ -1,0 +1,75 @@
+# =============================================================================
+# Ingress — Route external traffic to frontend and backend services
+# =============================================================================
+# Assumes an Ingress controller (e.g., nginx-ingress, Traefik) is installed.
+#
+# Routing:
+#   /                 → frontend:3000
+#   /auth/*           → auth:4001
+#   /api/v1/*         → api:4000
+#   /deployments-api/* → deployment-svc:4002  (internal, optional)
+#
+# TLS: uncomment the tls section and create a matching Secret for production.
+# =============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: devops-dashboard
+  namespace: devops-dashboard
+  labels:
+    app.kubernetes.io/part-of: devops-dashboard
+  annotations:
+    # nginx-ingress annotations (adjust for your controller)
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    # Rate limiting (optional)
+    nginx.ingress.kubernetes.io/limit-rps: "50"
+spec:
+  ingressClassName: nginx
+  # ---- TLS (uncomment for production) ----
+  # tls:
+  #   - hosts:
+  #       - dashboard.example.com
+  #     secretName: devops-dashboard-tls
+  rules:
+    - host: dashboard.example.com   # Change to your domain, or remove for default
+      http:
+        paths:
+          # ---- Auth API ----
+          - path: /auth
+            pathType: Prefix
+            backend:
+              service:
+                name: auth
+                port:
+                  number: 4001
+
+          # ---- REST API (read gateway) ----
+          - path: /api/v1
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 4000
+
+          # ---- Health endpoints (direct access) ----
+          - path: /health
+            pathType: Exact
+            backend:
+              service:
+                name: api
+                port:
+                  number: 4000
+
+          # ---- Frontend (catch-all, must be last) ----
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 3000
