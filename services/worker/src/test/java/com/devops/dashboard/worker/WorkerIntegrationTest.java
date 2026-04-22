@@ -10,7 +10,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.bean.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
@@ -36,14 +36,14 @@ class WorkerIntegrationTest {
     @Autowired private EnvironmentSyncJob envSyncJob;
     @Autowired private AlertEscalationJob alertEscalationJob;
 
-    @MockBean private DeploymentRepository deployRepo;
-    @MockBean private AlertRepository alertRepo;
-    @MockBean private AuditLogRepository auditRepo;
-    @MockBean private EnvironmentRepository envRepo;
-    @MockBean private ProjectRepository projectRepo;
-    @MockBean private UserRepository userRepo;
-    @MockBean private RoleRepository roleRepo;
-    @MockBean private NotificationClient notificationClient;
+    @MockitoBean private DeploymentRepository deployRepo;
+    @MockitoBean private AlertRepository alertRepo;
+    @MockitoBean private AuditLogRepository auditRepo;
+    @MockitoBean private EnvironmentRepository envRepo;
+    @MockitoBean private ProjectRepository projectRepo;
+    @MockitoBean private UserRepository userRepo;
+    @MockitoBean private RoleRepository roleRepo;
+    @MockitoBean private NotificationClient notificationClient;
 
     @BeforeEach
     void setUp() {

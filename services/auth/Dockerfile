@@ -12,7 +12,7 @@ WORKDIR /app/services
 RUN mvn dependency:go-offline -pl shared,auth -am -B -q || true
 COPY services/shared/src /app/services/shared/src
 COPY services/auth/src /app/services/auth/src
-RUN mvn clean package -pl shared,auth -am -DskipTests -B -q
+RUN mvn clean package -pl shared,auth -am -Dmaven.test.skip=true -B -q
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app

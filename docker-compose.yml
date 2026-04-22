@@ -188,6 +188,9 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://api:4000
+        NEXT_PUBLIC_AUTH_URL: http://auth:4001
     container_name: devops-frontend
     restart: unless-stopped
     ports:

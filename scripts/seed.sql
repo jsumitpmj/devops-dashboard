@@ -15,11 +15,11 @@ ON CONFLICT (name) DO NOTHING;
 
 -- Users (passwords are bcrypt hash of "password123")
 INSERT INTO users (id, email, username, password_hash, display_name, status) VALUES
-  ('b0000000-0000-0000-0000-000000000001', 'admin@devops.local',   'admin',   '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36Kz2N6h.GzQ7eCjOYDhOe6', 'Admin User',    'active'),
-  ('b0000000-0000-0000-0000-000000000002', 'alice@devops.local',   'alice',   '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36Kz2N6h.GzQ7eCjOYDhOe6', 'Alice Chen',    'active'),
-  ('b0000000-0000-0000-0000-000000000003', 'bob@devops.local',     'bob',     '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36Kz2N6h.GzQ7eCjOYDhOe6', 'Bob Martinez',  'active'),
-  ('b0000000-0000-0000-0000-000000000004', 'carol@devops.local',   'carol',   '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36Kz2N6h.GzQ7eCjOYDhOe6', 'Carol Wang',    'active'),
-  ('b0000000-0000-0000-0000-000000000005', 'dave@devops.local',    'dave',    '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36Kz2N6h.GzQ7eCjOYDhOe6', 'Dave Johnson',  'inactive')
+  ('b0000000-0000-0000-0000-000000000001', 'admin@devops.local',   'admin',   '$2b$10$oXoZyq3sCzvYOpoQ4rkLd.M0BCLPTRcZJrHLbHZvJ7DLEX6h1S5p6', 'Admin User',    'active'),
+  ('b0000000-0000-0000-0000-000000000002', 'alice@devops.local',   'alice',   '$2b$10$oXoZyq3sCzvYOpoQ4rkLd.M0BCLPTRcZJrHLbHZvJ7DLEX6h1S5p6', 'Alice Chen',    'active'),
+  ('b0000000-0000-0000-0000-000000000003', 'bob@devops.local',     'bob',     '$2b$10$oXoZyq3sCzvYOpoQ4rkLd.M0BCLPTRcZJrHLbHZvJ7DLEX6h1S5p6', 'Bob Martinez',  'active'),
+  ('b0000000-0000-0000-0000-000000000004', 'carol@devops.local',   'carol',   '$2b$10$oXoZyq3sCzvYOpoQ4rkLd.M0BCLPTRcZJrHLbHZvJ7DLEX6h1S5p6', 'Carol Wang',    'active'),
+  ('b0000000-0000-0000-0000-000000000005', 'dave@devops.local',    'dave',    '$2b$10$oXoZyq3sCzvYOpoQ4rkLd.M0BCLPTRcZJrHLbHZvJ7DLEX6h1S5p6', 'Dave Johnson',  'inactive')
 ON CONFLICT (email) DO NOTHING;
 
 -- User Roles

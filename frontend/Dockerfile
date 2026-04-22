@@ -6,6 +6,13 @@ COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm install
 
 COPY frontend/ .
+
+# Build-time env vars so Next.js bakes correct service URLs into routes-manifest.json
+ARG NEXT_PUBLIC_API_URL=http://api:4000
+ARG NEXT_PUBLIC_AUTH_URL=http://auth:4001
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_AUTH_URL=$NEXT_PUBLIC_AUTH_URL
+
 RUN npm run build
 
 # --- Runtime stage ---

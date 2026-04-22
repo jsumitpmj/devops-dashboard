@@ -17,7 +17,7 @@ spring:
     hibernate:
       ddl-auto: none
     show-sql: false
-    open-in-view: false
+    open-in-view: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -25,6 +25,7 @@ spring:
   jackson:
     serialization:
       write-dates-as-timestamps: false
+      fail-on-empty-beans: false
     default-property-inclusion: non_null
 
 server:

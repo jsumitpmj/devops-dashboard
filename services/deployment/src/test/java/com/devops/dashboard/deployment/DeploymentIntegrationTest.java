@@ -10,7 +10,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.bean.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -35,13 +35,13 @@ class DeploymentIntegrationTest {
     @Autowired private ObjectMapper objectMapper;
     @Autowired private JwtUtil jwtUtil;
 
-    @MockBean private DeploymentRepository deployRepo;
-    @MockBean private EnvironmentRepository envRepo;
-    @MockBean private ProjectRepository projectRepo;
-    @MockBean private UserRepository userRepo;
-    @MockBean private AuditLogRepository auditRepo;
-    @MockBean private AlertRepository alertRepo;
-    @MockBean private RoleRepository roleRepo;
+    @MockitoBean private DeploymentRepository deployRepo;
+    @MockitoBean private EnvironmentRepository envRepo;
+    @MockitoBean private ProjectRepository projectRepo;
+    @MockitoBean private UserRepository userRepo;
+    @MockitoBean private AuditLogRepository auditRepo;
+    @MockitoBean private AlertRepository alertRepo;
+    @MockitoBean private RoleRepository roleRepo;
 
     private String deployerToken;
     private UUID deployerUserId;

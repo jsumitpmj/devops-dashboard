@@ -31,6 +31,7 @@ public class Deployment {
     private User triggeredBy;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false, columnDefinition = "deployment_status")
     @Builder.Default
     private DeploymentStatus status = DeploymentStatus.pending;

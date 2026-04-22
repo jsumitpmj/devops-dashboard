@@ -39,20 +39,22 @@ public class ProjectController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable UUID id) {
+        ResponseEntity<?> notFound = ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                Map.of("error", ApiError.builder().error("Not Found")
+                        .message("Project not found").statusCode(404).build()));
         return projectRepo.findById(id)
-                .map(p -> ResponseEntity.ok(Map.of("data", p)))
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                        Map.of("error", ApiError.builder().error("Not Found")
-                                .message("Project not found").statusCode(404).build())));
+                .<ResponseEntity<?>>map(p -> ResponseEntity.ok(Map.of("data", p)))
+                .orElse(notFound);
     }
 
     @GetMapping("/slug/{slug}")
     public ResponseEntity<?> getBySlug(@PathVariable String slug) {
+        ResponseEntity<?> notFound = ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                Map.of("error", ApiError.builder().error("Not Found")
+                        .message("Project not found").statusCode(404).build()));
         return projectRepo.findBySlug(slug)
-                .map(p -> ResponseEntity.ok(Map.of("data", p)))
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                        Map.of("error", ApiError.builder().error("Not Found")
-                                .message("Project not found").statusCode(404).build())));
+                .<ResponseEntity<?>>map(p -> ResponseEntity.ok(Map.of("data", p)))
+                .orElse(notFound);
     }
 
     @PostMapping

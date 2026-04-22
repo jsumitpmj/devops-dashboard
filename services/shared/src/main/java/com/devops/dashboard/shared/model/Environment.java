@@ -3,6 +3,7 @@ package com.devops.dashboard.shared.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.OffsetDateTime;
@@ -28,6 +29,7 @@ public class Environment {
     private String name;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "env_type", nullable = false, columnDefinition = "environment_type")
     @Builder.Default
     private EnvironmentType envType = EnvironmentType.development;

@@ -24,11 +24,13 @@ public class Alert {
     private String message;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false, columnDefinition = "alert_severity")
     @Builder.Default
     private AlertSeverity severity = AlertSeverity.info;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false, columnDefinition = "alert_status")
     @Builder.Default
     private AlertStatus status = AlertStatus.open;

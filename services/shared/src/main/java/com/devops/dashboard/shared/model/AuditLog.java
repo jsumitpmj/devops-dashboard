@@ -2,6 +2,7 @@ package com.devops.dashboard.shared.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnTransformer;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -36,6 +37,7 @@ public class AuditLog {
     private Map<String, Object> diff = Map.of();
 
     @Column(name = "ip_address", columnDefinition = "inet")
+    @ColumnTransformer(write = "?::inet", read = "ip_address::text")
     private String ipAddress;
 
     @Column(name = "user_agent")

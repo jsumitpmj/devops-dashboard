@@ -15,7 +15,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.bean.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -54,13 +54,13 @@ class AuthIntegrationTest {
     @Autowired
     private JwtUtil jwtUtil;
 
-    @MockBean
+    @MockitoBean
     private UserRepository userRepo;
 
-    @MockBean
+    @MockitoBean
     private RoleRepository roleRepo;
 
-    @MockBean
+    @MockitoBean
     private AuditLogRepository auditRepo;
 
     // ---- shared fixtures ---------------------------------------------------

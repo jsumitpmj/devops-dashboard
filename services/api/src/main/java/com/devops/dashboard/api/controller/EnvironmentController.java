@@ -38,10 +38,11 @@ public class EnvironmentController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable UUID id) {
+        ResponseEntity<?> notFound = ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", "Environment not found"));
         return envRepo.findById(id)
-                .map(e -> ResponseEntity.ok(Map.of("data", e)))
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "Environment not found")));
+                .<ResponseEntity<?>>map(e -> ResponseEntity.ok(Map.of("data", e)))
+                .orElse(notFound);
     }
 
     @PostMapping

@@ -22,7 +22,7 @@ COPY services/shared/src /app/services/shared/src
 COPY services/api/src /app/services/api/src
 
 # Build
-RUN mvn clean package -pl shared,api -am -DskipTests -B -q
+RUN mvn clean package -pl shared,api -am -Dmaven.test.skip=true -B -q
 
 # --- Runtime stage ---
 FROM eclipse-temurin:21-jre-alpine

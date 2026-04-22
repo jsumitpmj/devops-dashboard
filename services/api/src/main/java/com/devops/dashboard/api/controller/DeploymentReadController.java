@@ -56,10 +56,11 @@ public class DeploymentReadController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable UUID id) {
+        ResponseEntity<?> notFound = ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", "Deployment not found"));
         return deployRepo.findById(id)
-                .map(d -> ResponseEntity.ok(Map.of("data", d)))
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "Deployment not found")));
+                .<ResponseEntity<?>>map(d -> ResponseEntity.ok(Map.of("data", d)))
+                .orElse(notFound);
     }
 
     @GetMapping("/stats")

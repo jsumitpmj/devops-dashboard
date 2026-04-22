@@ -116,7 +116,7 @@ public class NotificationService {
     // ---- internals ----------------------------------------------------------
 
     private Alert persistAlert(NotificationEvent event) {
-        Alert.Builder builder = Alert.builder()
+        var builder = Alert.builder()
                 .title(event.getTitle())
                 .message(event.getMessage())
                 .severity(parseSeverity(event.getSeverity()))

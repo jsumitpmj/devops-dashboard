@@ -49,9 +49,10 @@ public class AlertController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable UUID id) {
+        ResponseEntity<?> notFound = ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", "Alert not found"));
         return alertRepo.findById(id)
-                .map(a -> ResponseEntity.ok(Map.of("data", a)))
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "Alert not found")));
+                .<ResponseEntity<?>>map(a -> ResponseEntity.ok(Map.of("data", a)))
+                .orElse(notFound);
     }
 }
