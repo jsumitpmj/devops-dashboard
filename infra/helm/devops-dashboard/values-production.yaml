@@ -1,0 +1,77 @@
+# =============================================================================
+# values-production.yaml — Production environment overrides
+# =============================================================================
+# Usage:
+#   helm upgrade --install devops-dashboard ./infra/helm/devops-dashboard \
+#     -f infra/helm/devops-dashboard/values-production.yaml \
+#     -n devops-dashboard --create-namespace
+#
+# IMPORTANT: Replace all placeholder secrets below with real values.
+#            Prefer using an external secrets manager (ESO / Vault / Sealed Secrets)
+#            and setting secrets.* values via CI/CD environment variables:
+#
+#   helm upgrade --install ... \
+#     --set secrets.jwtSecret="$JWT_SECRET" \
+#     --set secrets.dbPassword="$DB_PASSWORD"
+# =============================================================================
+
+global:
+  imageRegistry: ""   # e.g. registry.example.com/production
+
+secrets:
+  # !! Replace with real secrets via CI/CD — do NOT commit plain-text secrets !!
+  dbPassword: "REPLACE_ME"
+  jwtSecret: "REPLACE_ME_MUST_BE_AT_LEAST_32_CHARACTERS_LONG"
+  postgresUser: "devops"
+  postgresPassword: "REPLACE_ME"
+  postgresDb: "devops_dashboard"
+
+config:
+  # External managed DB — disable bundled postgres below
+  databaseUrl: "jdbc:postgresql://your-rds-host:5432/devops_dashboard"
+  dbUser: "devops"
+  logLevel: "info"
+  notificationEmailEnabled: "true"
+  notificationEmailFrom: "noreply@yourdomain.com"
+  notificationSmtpHost: "smtp.yourdomain.com"
+  notificationSmtpPort: "587"
+
+# Disable bundled Postgres; use a managed database in production
+postgres:
+  enabled: false
+
+# Production replica counts — HPAs will scale beyond these
+api:
+  replicas: 2
+  hpa:
+    minReplicas: 2
+    maxReplicas: 8
+
+auth:
+  replicas: 2
+  hpa:
+    minReplicas: 2
+    maxReplicas: 6
+
+deploymentSvc:
+  replicas: 2
+  hpa:
+    minReplicas: 2
+    maxReplicas: 6
+
+frontend:
+  replicas: 2
+  apiUrl: "https://dashboard.yourdomain.com/api/v1"
+  authUrl: "https://dashboard.yourdomain.com/auth"
+  hpa:
+    minReplicas: 2
+    maxReplicas: 6
+
+ingress:
+  host: "dashboard.yourdomain.com"
+  tls:
+    enabled: true
+    secretName: "devops-dashboard-tls"
+
+networkPolicies:
+  enabled: true

@@ -1,0 +1,299 @@
+# =============================================================================
+# DevOps Dashboard — Helm Chart Default Values
+# =============================================================================
+# Override any of these in environment-specific values files:
+#   values-staging.yaml
+#   values-production.yaml
+# Or inline:
+#   helm upgrade --install devops-dashboard ./devops-dashboard \
+#     --set global.imageRegistry=registry.example.com \
+#     --set secrets.jwtSecret="my-super-secret"
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Global settings
+# ---------------------------------------------------------------------------
+global:
+  # Container image registry prefix (e.g. "registry.example.com/myorg").
+  # Leave empty to use the bare image names from each service's image.repository.
+  imageRegistry: ""
+  # Pull secret name(s) for private registries
+  imagePullSecrets: []
+  # Override the release namespace (defaults to helm install --namespace)
+  namespaceOverride: ""
+
+# ---------------------------------------------------------------------------
+# Namespace
+# ---------------------------------------------------------------------------
+namespace:
+  # Set to false if you are managing the namespace externally
+  create: true
+  name: devops-dashboard
+  labels:
+    app.kubernetes.io/part-of: devops-dashboard
+    app.kubernetes.io/managed-by: helm
+
+# ---------------------------------------------------------------------------
+# Shared labels appended to every resource
+# ---------------------------------------------------------------------------
+commonLabels: {}
+# e.g.
+#   environment: production
+#   team: platform
+
+# ---------------------------------------------------------------------------
+# Secrets
+# ---------------------------------------------------------------------------
+# Values here are rendered as plain strings and base64-encoded by the chart.
+# For production use an external secrets manager (ESO, Vault, Sealed Secrets).
+secrets:
+  # Database password for the application user
+  dbPassword: "devops"
+  # JWT signing secret — MUST be ≥ 32 characters in production
+  jwtSecret: "change-me-in-production-must-be-at-least-32-chars"
+  # Optional Slack webhook URL
+  notificationSlackWebhook: ""
+  # PostgreSQL bootstrap credentials (used by the bundled StatefulSet only)
+  postgresUser: "devops"
+  postgresPassword: "devops"
+  postgresDb: "devops_dashboard"
+
+# ---------------------------------------------------------------------------
+# ConfigMap — application config
+# ---------------------------------------------------------------------------
+config:
+  # ---- Database ----
+  databaseUrl: "jdbc:postgresql://postgres:5432/devops_dashboard"
+  dbUser: "devops"
+  # ---- JWT ----
+  jwtExpirationMs: "86400000"
+  # ---- Worker ----
+  pollIntervalMs: "30000"
+  workerStaleTimeoutMins: "30"
+  workerSyncIntervalMs: "60000"
+  notificationServiceUrl: "http://notification:4003"
+  # ---- Notification ----
+  notificationEmailEnabled: "false"
+  notificationEmailFrom: "noreply@devops-dashboard.local"
+  notificationSmtpHost: "localhost"
+  notificationSmtpPort: "587"
+  notificationSlackEnabled: "false"
+  # ---- Logging ----
+  logLevel: "info"
+
+# ---------------------------------------------------------------------------
+# PostgreSQL (bundled, dev/staging only)
+# ---------------------------------------------------------------------------
+postgres:
+  # Set to false to use an external database (RDS, Cloud SQL, etc.)
+  enabled: true
+  image:
+    repository: postgres
+    tag: "18-alpine"
+    pullPolicy: IfNotPresent
+  replicas: 1
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  persistence:
+    size: 5Gi
+    # storageClassName: ""   # uncomment and set for specific storage class
+  # Liveness / readiness probe database user
+  probeUser: "devops"
+  probeDb: "devops_dashboard"
+
+# ---------------------------------------------------------------------------
+# API Gateway
+# ---------------------------------------------------------------------------
+api:
+  enabled: true
+  image:
+    repository: devops-dashboard/api
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  port: 4000
+  replicas: 2
+  resources:
+    requests:
+      cpu: 250m
+      memory: 384Mi
+    limits:
+      cpu: "1"
+      memory: 768Mi
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 8
+    cpuUtilization: 70
+    memoryUtilization: 80
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+# ---------------------------------------------------------------------------
+# Auth Service
+# ---------------------------------------------------------------------------
+auth:
+  enabled: true
+  image:
+    repository: devops-dashboard/auth
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  port: 4001
+  replicas: 2
+  resources:
+    requests:
+      cpu: 200m
+      memory: 384Mi
+    limits:
+      cpu: "1"
+      memory: 768Mi
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 6
+    cpuUtilization: 70
+    memoryUtilization: 80
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+# ---------------------------------------------------------------------------
+# Deployment Service
+# ---------------------------------------------------------------------------
+deploymentSvc:
+  enabled: true
+  image:
+    repository: devops-dashboard/deployment
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  port: 4002
+  replicas: 2
+  resources:
+    requests:
+      cpu: 200m
+      memory: 384Mi
+    limits:
+      cpu: "1"
+      memory: 768Mi
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 6
+    cpuUtilization: 70
+    memoryUtilization: 80
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+# ---------------------------------------------------------------------------
+# Notification Service
+# ---------------------------------------------------------------------------
+notification:
+  enabled: true
+  image:
+    repository: devops-dashboard/notification
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  port: 4003
+  # Keep at 1 for message ordering guarantees
+  replicas: 1
+  resources:
+    requests:
+      cpu: 150m
+      memory: 320Mi
+    limits:
+      cpu: 500m
+      memory: 640Mi
+  # HPA intentionally disabled for ordering guarantees
+  hpa:
+    enabled: false
+
+# ---------------------------------------------------------------------------
+# Worker
+# ---------------------------------------------------------------------------
+worker:
+  enabled: true
+  image:
+    repository: devops-dashboard/worker
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  port: 4004
+  # Keep at 1 to avoid duplicate job processing
+  replicas: 1
+  resources:
+    requests:
+      cpu: 150m
+      memory: 320Mi
+    limits:
+      cpu: 500m
+      memory: 640Mi
+  # HPA intentionally disabled (single replica for job deduplication)
+  hpa:
+    enabled: false
+
+# ---------------------------------------------------------------------------
+# Frontend (Next.js)
+# ---------------------------------------------------------------------------
+frontend:
+  enabled: true
+  image:
+    repository: devops-dashboard/frontend
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  port: 3000
+  replicas: 2
+  # These env vars are baked in at runtime (not build time)
+  apiUrl: "http://api:4000"
+  authUrl: "http://auth:4001"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 6
+    cpuUtilization: 70
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+# ---------------------------------------------------------------------------
+# Ingress
+# ---------------------------------------------------------------------------
+ingress:
+  enabled: true
+  className: nginx
+  # Set your domain here. Remove the 'host' key to use the default (no hostname rule).
+  host: "dashboard.example.com"
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/limit-rps: "50"
+  tls:
+    enabled: false
+    # secretName: devops-dashboard-tls
+
+# ---------------------------------------------------------------------------
+# Network Policies
+# ---------------------------------------------------------------------------
+networkPolicies:
+  enabled: true
+
+# ---------------------------------------------------------------------------
+# ServiceAccount
+# ---------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}

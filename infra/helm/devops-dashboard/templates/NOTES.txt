@@ -1,0 +1,86 @@
+========================================================================
+  DevOps Dashboard — Helm Release: {{ .Release.Name }}
+========================================================================
+
+  Release namespace : {{ include "devops-dashboard.namespace" . }}
+  Chart version     : {{ .Chart.Version }}
+  App version       : {{ .Chart.AppVersion }}
+
+------------------------------------------------------------------------
+  Services deployed
+------------------------------------------------------------------------
+{{- if .Values.api.enabled }}
+  ✔  API Gateway       ClusterIP  port {{ .Values.api.port }}
+{{- end }}
+{{- if .Values.auth.enabled }}
+  ✔  Auth Service      ClusterIP  port {{ .Values.auth.port }}
+{{- end }}
+{{- if .Values.deploymentSvc.enabled }}
+  ✔  Deployment Svc   ClusterIP  port {{ .Values.deploymentSvc.port }}
+{{- end }}
+{{- if .Values.notification.enabled }}
+  ✔  Notification      ClusterIP  port {{ .Values.notification.port }}
+{{- end }}
+{{- if .Values.worker.enabled }}
+  ✔  Worker            ClusterIP  port {{ .Values.worker.port }}
+{{- end }}
+{{- if .Values.frontend.enabled }}
+  ✔  Frontend          ClusterIP  port {{ .Values.frontend.port }}
+{{- end }}
+{{- if .Values.postgres.enabled }}
+  ✔  PostgreSQL        StatefulSet (dev/staging only)
+{{- else }}
+  ✗  PostgreSQL        disabled — using external database
+{{- end }}
+
+------------------------------------------------------------------------
+  Access the Dashboard
+------------------------------------------------------------------------
+{{- if .Values.ingress.enabled }}
+{{- if .Values.ingress.tls.enabled }}
+  https://{{ .Values.ingress.host | default "your-domain" }}/
+{{- else }}
+  http://{{ .Values.ingress.host | default "your-domain" }}/
+{{- end }}
+{{- else }}
+  Ingress is disabled. Use port-forward to access the frontend:
+
+    kubectl port-forward svc/frontend {{ .Values.frontend.port }}:{{ .Values.frontend.port }} \
+      -n {{ include "devops-dashboard.namespace" . }}
+
+  Then open: http://localhost:{{ .Values.frontend.port }}/
+{{- end }}
+
+------------------------------------------------------------------------
+  Useful Commands
+------------------------------------------------------------------------
+  # Check all pods
+  kubectl get pods -n {{ include "devops-dashboard.namespace" . }}
+
+  # Tail logs for a service (example: api)
+  kubectl logs -l app.kubernetes.io/name=api \
+    -n {{ include "devops-dashboard.namespace" . }} --tail=100 -f
+
+  # Upgrade the release
+  helm upgrade {{ .Release.Name }} ./infra/helm/devops-dashboard \
+    -f values-production.yaml -n {{ include "devops-dashboard.namespace" . }}
+
+  # Uninstall
+  helm uninstall {{ .Release.Name }} -n {{ include "devops-dashboard.namespace" . }}
+
+------------------------------------------------------------------------
+  ⚠  Production Checklist
+------------------------------------------------------------------------
+  1. Set a strong jwtSecret  (≥ 32 chars):
+       --set secrets.jwtSecret="<strong-secret>"
+  2. Disable bundled Postgres and point to a managed DB:
+       --set postgres.enabled=false \
+       --set config.databaseUrl="jdbc:postgresql://<host>:5432/<db>"
+  3. Enable TLS on the Ingress:
+       --set ingress.tls.enabled=true \
+       --set ingress.tls.secretName="devops-dashboard-tls"
+  4. Set your production domain:
+       --set ingress.host="dashboard.yourdomain.com"
+  5. Use an external secrets manager instead of plain values.
+
+========================================================================

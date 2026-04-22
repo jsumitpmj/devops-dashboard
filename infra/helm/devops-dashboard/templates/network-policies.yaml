@@ -1,0 +1,140 @@
+{{- if .Values.networkPolicies.enabled }}
+# =============================================================================
+# Network Policies — Restrict inter-service traffic
+# =============================================================================
+# Rules:
+#   - Default deny-all ingress within the namespace
+#   - All pods can reach PostgreSQL
+#   - Ingress controller can reach frontend, api, auth
+#   - Worker can call notification
+#   - Health check probes allowed on all service ports
+# =============================================================================
+
+# Default: deny all ingress within the namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: {{ include "devops-dashboard.namespace" . }}
+  labels:
+    {{- include "devops-dashboard.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+
+---
+# Allow all pods to reach PostgreSQL
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-postgres
+  namespace: {{ include "devops-dashboard.namespace" . }}
+  labels:
+    {{- include "devops-dashboard.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: postgres
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ include "devops-dashboard.namespace" . }}
+      ports:
+        - port: 5432
+
+---
+# Allow Ingress → Frontend
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-frontend
+  namespace: {{ include "devops-dashboard.namespace" . }}
+  labels:
+    {{- include "devops-dashboard.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: frontend
+  ingress:
+    - ports:
+        - port: {{ .Values.frontend.port }}
+
+---
+# Allow Ingress → API
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-api
+  namespace: {{ include "devops-dashboard.namespace" . }}
+  labels:
+    {{- include "devops-dashboard.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: api
+  ingress:
+    - ports:
+        - port: {{ .Values.api.port }}
+
+---
+# Allow Ingress → Auth
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-auth
+  namespace: {{ include "devops-dashboard.namespace" . }}
+  labels:
+    {{- include "devops-dashboard.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: auth
+  ingress:
+    - ports:
+        - port: {{ .Values.auth.port }}
+
+---
+# Allow Worker → Notification (internal REST calls)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-worker-to-notification
+  namespace: {{ include "devops-dashboard.namespace" . }}
+  labels:
+    {{- include "devops-dashboard.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: notification
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: worker
+      ports:
+        - port: {{ .Values.notification.port }}
+
+---
+# Allow kubelet health-check probes on all service ports
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-health-probes
+  namespace: {{ include "devops-dashboard.namespace" . }}
+  labels:
+    {{- include "devops-dashboard.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: devops-dashboard
+  ingress:
+    - ports:
+        - port: {{ .Values.frontend.port }}
+        - port: {{ .Values.api.port }}
+        - port: {{ .Values.auth.port }}
+        - port: {{ .Values.deploymentSvc.port }}
+        - port: {{ .Values.notification.port }}
+        - port: {{ .Values.worker.port }}
+{{- end }}

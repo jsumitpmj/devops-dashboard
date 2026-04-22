@@ -1,0 +1,23 @@
+apiVersion: v2
+name: devops-dashboard
+description: >
+  A Helm chart for the DevOps Dashboard Platform — a microservices application
+  comprising an API gateway, Auth service, Deployment service, Notification
+  service, Worker, Frontend (Next.js), and an optional bundled PostgreSQL
+  StatefulSet (dev/staging only).
+type: application
+version: 0.1.0
+appVersion: "latest"
+keywords:
+  - devops
+  - dashboard
+  - microservices
+home: https://github.com/your-org/devops-dashboard
+sources:
+  - https://github.com/your-org/devops-dashboard
+maintainers:
+  - name: Platform Team
+    email: platform@example.com
+annotations:
+  artifacthub.io/changes: |
+    - Initial Helm chart release

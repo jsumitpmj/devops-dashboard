@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: devops-config
+  namespace: {{ include "devops-dashboard.namespace" . }}
+  labels:
+    {{- include "devops-dashboard.labels" . | nindent 4 }}
+data:
+  # ---- Database ----
+  DATABASE_URL: {{ .Values.config.databaseUrl | quote }}
+  DB_USER: {{ .Values.config.dbUser | quote }}
+
+  # ---- Service ports ----
+  API_PORT: {{ .Values.api.port | toString | quote }}
+  AUTH_PORT: {{ .Values.auth.port | toString | quote }}
+  DEPLOYMENT_PORT: {{ .Values.deploymentSvc.port | toString | quote }}
+  NOTIFICATION_PORT: {{ .Values.notification.port | toString | quote }}
+  WORKER_PORT: {{ .Values.worker.port | toString | quote }}
+  FRONTEND_PORT: {{ .Values.frontend.port | toString | quote }}
+
+  # ---- JWT ----
+  JWT_EXPIRATION_MS: {{ .Values.config.jwtExpirationMs | quote }}
+
+  # ---- Worker ----
+  POLL_INTERVAL_MS: {{ .Values.config.pollIntervalMs | quote }}
+  WORKER_STALE_TIMEOUT_MINS: {{ .Values.config.workerStaleTimeoutMins | quote }}
+  WORKER_SYNC_INTERVAL_MS: {{ .Values.config.workerSyncIntervalMs | quote }}
+  NOTIFICATION_SERVICE_URL: {{ .Values.config.notificationServiceUrl | quote }}
+
+  # ---- Notification ----
+  NOTIFICATION_EMAIL_ENABLED: {{ .Values.config.notificationEmailEnabled | quote }}
+  NOTIFICATION_EMAIL_FROM: {{ .Values.config.notificationEmailFrom | quote }}
+  NOTIFICATION_SMTP_HOST: {{ .Values.config.notificationSmtpHost | quote }}
+  NOTIFICATION_SMTP_PORT: {{ .Values.config.notificationSmtpPort | quote }}
+  NOTIFICATION_SLACK_ENABLED: {{ .Values.config.notificationSlackEnabled | quote }}
+
+  # ---- Logging ----
+  LOG_LEVEL: {{ .Values.config.logLevel | quote }}

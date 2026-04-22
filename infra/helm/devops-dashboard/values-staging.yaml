@@ -1,0 +1,57 @@
+# =============================================================================
+# values-staging.yaml — Staging environment overrides
+# =============================================================================
+# Usage:
+#   helm upgrade --install devops-dashboard ./infra/helm/devops-dashboard \
+#     -f infra/helm/devops-dashboard/values-staging.yaml \
+#     -n devops-dashboard --create-namespace
+# =============================================================================
+
+global:
+  imageRegistry: ""   # e.g. registry.example.com/staging
+
+secrets:
+  dbPassword: "staging-db-password"
+  jwtSecret: "staging-jwt-secret-must-be-at-least-32-chars!"
+  postgresUser: "devops"
+  postgresPassword: "staging-pg-password"
+  postgresDb: "devops_dashboard"
+
+config:
+  logLevel: "debug"
+
+# Bundled Postgres is fine for staging
+postgres:
+  enabled: true
+  persistence:
+    size: 10Gi
+
+# Reduced replicas for staging
+api:
+  replicas: 1
+  hpa:
+    minReplicas: 1
+    maxReplicas: 3
+
+auth:
+  replicas: 1
+  hpa:
+    minReplicas: 1
+    maxReplicas: 3
+
+deploymentSvc:
+  replicas: 1
+  hpa:
+    minReplicas: 1
+    maxReplicas: 2
+
+frontend:
+  replicas: 1
+  hpa:
+    minReplicas: 1
+    maxReplicas: 3
+
+ingress:
+  host: "staging.dashboard.example.com"
+  tls:
+    enabled: false

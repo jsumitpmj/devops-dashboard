@@ -1,0 +1,18 @@
+# Patterns to ignore when packaging the chart.
+# Matches .gitignore syntax.
+.DS_Store
+.git/
+.gitignore
+*.swp
+*.bak
+*.tmp
+*.orig
+*~
+# CI artifacts
+.github/
+# Editor directories
+.vscode/
+.idea/
+# Test overrides
+values-*.yaml
+!values.yaml

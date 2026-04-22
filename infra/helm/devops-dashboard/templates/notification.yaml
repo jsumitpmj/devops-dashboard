@@ -1,0 +1,123 @@
+{{- if .Values.notification.enabled }}
+# =============================================================================
+# Notification Service — Deployment + Service
+# =============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification
+  namespace: {{ include "devops-dashboard.namespace" . }}
+  labels:
+    {{- include "devops-dashboard.labels" . | nindent 4 }}
+    app.kubernetes.io/name: notification
+    app.kubernetes.io/component: backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.notification.port }}
+      targetPort: {{ .Values.notification.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: notification
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification
+  namespace: {{ include "devops-dashboard.namespace" . }}
+  labels:
+    {{- include "devops-dashboard.labels" . | nindent 4 }}
+    app.kubernetes.io/name: notification
+    app.kubernetes.io/component: backend
+spec:
+  # Keep at 1 for message ordering guarantees
+  replicas: {{ .Values.notification.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: notification
+  {{- include "devops-dashboard.rollingStrategy" . | nindent 2 }}
+  template:
+    metadata:
+      labels:
+        {{- include "devops-dashboard.labels" . | nindent 8 }}
+        app.kubernetes.io/name: notification
+        app.kubernetes.io/component: backend
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "devops-dashboard.serviceAccountName" . }}
+      containers:
+        - name: notification
+          image: {{ include "devops-dashboard.image" (dict "registry" .Values.global.imageRegistry "image" .Values.notification.image) }}
+          imagePullPolicy: {{ .Values.notification.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.notification.port }}
+              name: http
+          env:
+            - name: PORT
+              value: {{ .Values.notification.port | toString | quote }}
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: devops-config
+                  key: DATABASE_URL
+            - name: DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: devops-config
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: devops-secrets
+                  key: DB_PASSWORD
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: devops-secrets
+                  key: JWT_SECRET
+            - name: NOTIFICATION_EMAIL_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: devops-config
+                  key: NOTIFICATION_EMAIL_ENABLED
+            - name: NOTIFICATION_EMAIL_FROM
+              valueFrom:
+                configMapKeyRef:
+                  name: devops-config
+                  key: NOTIFICATION_EMAIL_FROM
+            - name: NOTIFICATION_SMTP_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: devops-config
+                  key: NOTIFICATION_SMTP_HOST
+            - name: NOTIFICATION_SMTP_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: devops-config
+                  key: NOTIFICATION_SMTP_PORT
+            - name: NOTIFICATION_SLACK_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: devops-config
+                  key: NOTIFICATION_SLACK_ENABLED
+            - name: NOTIFICATION_SLACK_WEBHOOK
+              valueFrom:
+                secretKeyRef:
+                  name: devops-secrets
+                  key: NOTIFICATION_SLACK_WEBHOOK
+                  optional: true
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: devops-config
+                  key: LOG_LEVEL
+          resources:
+            {{- toYaml .Values.notification.resources | nindent 12 }}
+          {{- include "devops-dashboard.httpProbes" (dict "path" "/health" "port" "http") | nindent 10 }}
+{{- end }}

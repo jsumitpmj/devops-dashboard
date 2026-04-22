@@ -1,0 +1,68 @@
+{{- if .Values.frontend.enabled }}
+# =============================================================================
+# Frontend (Next.js) — Deployment + Service
+# =============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: {{ include "devops-dashboard.namespace" . }}
+  labels:
+    {{- include "devops-dashboard.labels" . | nindent 4 }}
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/component: frontend
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.frontend.port }}
+      targetPort: {{ .Values.frontend.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: frontend
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: {{ include "devops-dashboard.namespace" . }}
+  labels:
+    {{- include "devops-dashboard.labels" . | nindent 4 }}
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/component: frontend
+spec:
+  replicas: {{ .Values.frontend.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: frontend
+  {{- include "devops-dashboard.rollingStrategy" . | nindent 2 }}
+  template:
+    metadata:
+      labels:
+        {{- include "devops-dashboard.labels" . | nindent 8 }}
+        app.kubernetes.io/name: frontend
+        app.kubernetes.io/component: frontend
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "devops-dashboard.serviceAccountName" . }}
+      containers:
+        - name: frontend
+          image: {{ include "devops-dashboard.image" (dict "registry" .Values.global.imageRegistry "image" .Values.frontend.image) }}
+          imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.frontend.port }}
+              name: http
+          env:
+            - name: NEXT_PUBLIC_API_URL
+              value: {{ .Values.frontend.apiUrl | quote }}
+            - name: NEXT_PUBLIC_AUTH_URL
+              value: {{ .Values.frontend.authUrl | quote }}
+          resources:
+            {{- toYaml .Values.frontend.resources | nindent 12 }}
+          {{- include "devops-dashboard.frontendProbes" . | nindent 10 }}
+{{- end }}

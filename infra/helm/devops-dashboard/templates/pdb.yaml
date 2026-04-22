@@ -1,0 +1,71 @@
+# =============================================================================
+# Pod Disruption Budgets
+# =============================================================================
+# Ensure at least 1 pod is always available during voluntary disruptions
+# (node drains, cluster upgrades, etc.)
+#
+# Worker and Notification are excluded (single replica — PDB would block drains).
+# =============================================================================
+
+{{- if and .Values.api.enabled .Values.api.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api-pdb
+  namespace: {{ include "devops-dashboard.namespace" . }}
+  labels:
+    {{- include "devops-dashboard.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.api.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: api
+{{- end }}
+
+{{- if and .Values.auth.enabled .Values.auth.pdb.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: auth-pdb
+  namespace: {{ include "devops-dashboard.namespace" . }}
+  labels:
+    {{- include "devops-dashboard.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.auth.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: auth
+{{- end }}
+
+{{- if and .Values.deploymentSvc.enabled .Values.deploymentSvc.pdb.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: deployment-svc-pdb
+  namespace: {{ include "devops-dashboard.namespace" . }}
+  labels:
+    {{- include "devops-dashboard.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.deploymentSvc.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: deployment-svc
+{{- end }}
+
+{{- if and .Values.frontend.enabled .Values.frontend.pdb.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: frontend-pdb
+  namespace: {{ include "devops-dashboard.namespace" . }}
+  labels:
+    {{- include "devops-dashboard.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.frontend.pdb.minAvailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: frontend
+{{- end }}

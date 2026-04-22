@@ -1,0 +1,136 @@
+{{- if .Values.postgres.enabled }}
+# =============================================================================
+# PostgreSQL — Dev/Staging StatefulSet
+# For production use a managed database and set postgres.enabled=false.
+# =============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: {{ include "devops-dashboard.namespace" . }}
+  labels:
+    {{- include "devops-dashboard.labels" . | nindent 4 }}
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/component: database
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+      name: postgres
+  selector:
+    app.kubernetes.io/name: postgres
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: {{ include "devops-dashboard.namespace" . }}
+  labels:
+    {{- include "devops-dashboard.labels" . | nindent 4 }}
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/component: database
+spec:
+  serviceName: postgres
+  replicas: {{ .Values.postgres.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: postgres
+  template:
+    metadata:
+      labels:
+        {{- include "devops-dashboard.labels" . | nindent 8 }}
+        app.kubernetes.io/name: postgres
+        app.kubernetes.io/component: database
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "devops-dashboard.serviceAccountName" . }}
+      containers:
+        - name: postgres
+          image: {{ include "devops-dashboard.image" (dict "registry" .Values.global.imageRegistry "image" .Values.postgres.image) }}
+          imagePullPolicy: {{ .Values.postgres.image.pullPolicy }}
+          ports:
+            - containerPort: 5432
+              name: postgres
+          envFrom:
+            - secretRef:
+                name: postgres-secrets
+          volumeMounts:
+            - name: pgdata
+              mountPath: /var/lib/postgresql/data
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
+          resources:
+            {{- toYaml .Values.postgres.resources | nindent 12 }}
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - {{ .Values.postgres.probeUser | quote }}
+                - -d
+                - {{ .Values.postgres.probeDb | quote }}
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - {{ .Values.postgres.probeUser | quote }}
+                - -d
+                - {{ .Values.postgres.probeDb | quote }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+      volumes:
+        - name: init-scripts
+          configMap:
+            name: postgres-init
+  volumeClaimTemplates:
+    - metadata:
+        name: pgdata
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        {{- with .Values.postgres.persistence.storageClassName }}
+        storageClassName: {{ . | quote }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.postgres.persistence.size }}
+
+---
+# Postgres init scripts ConfigMap.
+# For non-trivial schemas, replace this with:
+#   helm upgrade --set postgres.enabled=true ... \
+#   and pre-create the configmap with your SQL files:
+#
+#   kubectl create configmap postgres-init \
+#     --from-file=01_init.sql=infra/db/init.sql \
+#     --from-file=02_seed.sql=scripts/seed.sql \
+#     -n devops-dashboard
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init
+  namespace: {{ include "devops-dashboard.namespace" . }}
+  labels:
+    {{- include "devops-dashboard.labels" . | nindent 4 }}
+data:
+  placeholder.sql: |
+    -- Placeholder init script.
+    -- Override this ConfigMap with your real schema:
+    --   kubectl create configmap postgres-init \
+    --     --from-file=01_init.sql=infra/db/init.sql \
+    --     --from-file=02_seed.sql=scripts/seed.sql \
+    --     -n {{ include "devops-dashboard.namespace" . }} --dry-run=client -o yaml
+{{- end }}
