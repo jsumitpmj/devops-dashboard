@@ -15,4 +15,3 @@
 .idea/
 # Test overrides
 values-*.yaml
-!values.yaml

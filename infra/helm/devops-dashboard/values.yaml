@@ -26,8 +26,8 @@ global:
 # Namespace
 # ---------------------------------------------------------------------------
 namespace:
-  # Set to false if you are managing the namespace externally
-  create: true
+  # Set to false if you are managing the namespace externally (or using --create-namespace)
+  create: false
   name: devops-dashboard
   labels:
     app.kubernetes.io/part-of: devops-dashboard
