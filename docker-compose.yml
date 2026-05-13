@@ -23,7 +23,7 @@ services:
     ports:
       - "${DB_PORT:-5432}:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql
       - ./infra/db/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
       - ./scripts/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql:ro
     healthcheck:
