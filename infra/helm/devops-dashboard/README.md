@@ -151,3 +151,10 @@ The raw manifests in `infra/k8s/` remain as-is — useful for direct `kubectl ap
 or for reference when debugging the chart. The Helm chart is a superset: every
 resource in `infra/k8s/` has a corresponding template here, with all hard-coded
 values promoted to `values.yaml`.
+
+## Related Learning Guides
+
+- ☸️ [Intermediate Kubernetes & Helm Guide](../../../docs/guides/02-intermediate-kubernetes-and-helm.md) — Comprehensive guide to Helm templating, helpers, and environments.
+- 🎯 [Hands-On DevOps Challenges](../../../docs/guides/04-hands-on-devops-challenges.md#challenge-7-package--roll-back-with-helm) — Hands-on lab for upgrading and rolling back Helm releases.
+- 🛠️ [DevOps Troubleshooting Guide](../../../docs/guides/troubleshooting-guide.md) — Diagnosing common Kubernetes and Helm deployment errors.
+

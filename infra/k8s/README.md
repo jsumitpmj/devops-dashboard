@@ -98,3 +98,12 @@ kubectl get pdb -n devops-dashboard
 - [ ] Configure a container registry and update `image:` fields
 - [ ] Review resource requests/limits for your workload
 - [ ] Enable monitoring (Prometheus + Grafana)
+
+## Related Documentation & Learning Guides
+
+- 🧪 [Local Kubernetes Testing Guide](TESTING.md) — Comprehensive health check verification and interactive psql login.
+- 📦 [Loading Images Locally Guide](retag-images.md) — Step-by-step instructions for Minikube, Kind, and k3d.
+- ☸️ [Intermediate Kubernetes & Helm Guide](../../docs/guides/02-intermediate-kubernetes-and-helm.md) — Conceptual deep dive into workloads, probes, HPA, and Helm.
+- 🛡️ [Advanced SRE & Production Guide](../../docs/guides/03-advanced-sre-and-production.md) — External Secrets, HA database design, and zero-downtime rollouts.
+- 🛠️ [DevOps Troubleshooting Guide](../../docs/guides/troubleshooting-guide.md) — Triage runbook for CrashLoopBackOff, OOMKilled, and probe timeouts.
+
