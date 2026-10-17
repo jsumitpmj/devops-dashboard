@@ -1,0 +1,15 @@
+.git
+.gitignore
+.dockerignore
+target/
+**/target/
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+*.log
+logs/
+.idea/
+.vscode/
+*.swp
+*.swo

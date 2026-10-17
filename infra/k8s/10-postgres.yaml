@@ -95,27 +95,8 @@ spec:
           requests:
             storage: 5Gi
 
----
-# Init scripts (schema + seed) loaded as a ConfigMap.
-# For large SQL files, consider an initContainer with a mounted volume instead.
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: postgres-init
-  namespace: devops-dashboard
-  labels:
-    app.kubernetes.io/part-of: devops-dashboard
-data:
-  # These would contain the contents of infra/db/init.sql and scripts/seed.sql.
-  # In practice, use:
-  #   kubectl create configmap postgres-init \
-  #     --from-file=01_init.sql=infra/db/init.sql \
-  #     --from-file=02_seed.sql=scripts/seed.sql \
-  #     -n devops-dashboard
-  placeholder: |
-    -- This is a placeholder.
-    -- Create this ConfigMap from files:
-    --   kubectl create configmap postgres-init \
-    --     --from-file=01_init.sql=infra/db/init.sql \
-    --     --from-file=02_seed.sql=scripts/seed.sql \
-    --     -n devops-dashboard --dry-run=client -o yaml > infra/k8s/10-postgres-init.yaml
+# Note: The 'postgres-init' ConfigMap referenced above is created from SQL files:
+#   kubectl create configmap postgres-init \
+#     --from-file=01_init.sql=infra/db/init.sql \
+#     --from-file=02_seed.sql=scripts/seed.sql \
+#     -n devops-dashboard

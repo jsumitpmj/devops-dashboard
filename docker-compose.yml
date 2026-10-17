@@ -36,6 +36,7 @@ services:
   # API Service (Java / Spring Boot) — port 4000
   # ---------------------------------------------------------------------------
   api:
+    image: devops-dashboard/api:latest
     build:
       context: .
       dockerfile: services/api/Dockerfile
@@ -64,6 +65,7 @@ services:
   # Auth Service — port 4001
   # ---------------------------------------------------------------------------
   auth:
+    image: devops-dashboard/auth:latest
     build:
       context: .
       dockerfile: services/auth/Dockerfile
@@ -92,6 +94,7 @@ services:
   # Deployment Service — port 4002
   # ---------------------------------------------------------------------------
   deployment:
+    image: devops-dashboard/deployment:latest
     build:
       context: .
       dockerfile: services/deployment/Dockerfile
@@ -120,6 +123,7 @@ services:
   # Notification Service — port 4003
   # ---------------------------------------------------------------------------
   notification:
+    image: devops-dashboard/notification:latest
     build:
       context: .
       dockerfile: services/notification/Dockerfile
@@ -151,6 +155,7 @@ services:
   # Worker Service — port 4004
   # ---------------------------------------------------------------------------
   worker:
+    image: devops-dashboard/worker:latest
     build:
       context: .
       dockerfile: services/worker/Dockerfile
@@ -185,6 +190,7 @@ services:
   # Frontend (Next.js) — port 3000
   # ---------------------------------------------------------------------------
   frontend:
+    image: devops-dashboard/frontend:latest
     build:
       context: .
       dockerfile: frontend/Dockerfile
