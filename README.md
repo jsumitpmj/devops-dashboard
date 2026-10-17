@@ -48,6 +48,21 @@ A production-ready, multi-service monorepo for managing deployments, environment
 
 ---
 
+## 📚 DevOps Learning Path & Practical Guides
+
+This repository is designed as a hands-on learning laboratory for DevOps enthusiasts, students, and engineers. Explore our structured curriculum:
+
+| Guide | Level | What You Will Learn |
+|---|---|---|
+| 🗺️ **[Learning Roadmap & Curriculum](docs/guides/learning-roadmap.md)** | All Levels | Skill matrix, repository architecture mapping, and step-by-step progression path |
+| 🐳 **[Level 1: Docker & Container Fundamentals](docs/guides/01-beginner-docker-and-containers.md)** | Beginner | Containers vs VMs, multi-stage builds, `.dockerignore`, Docker Compose networking & DNS, container debugging |
+| ☸️ **[Level 2: Kubernetes & Helm Orchestration](docs/guides/02-intermediate-kubernetes-and-helm.md)** | Intermediate | Deployments vs StatefulSets, startup/liveness probes, Ingress, HPAs, PDBs, NetworkPolicies, Helm charts & environments |
+| 🛡️ **[Level 3: SRE, Security & Production Readiness](docs/guides/03-advanced-sre-and-production.md)** | Advanced | 12-Factor app audit, External Secrets Operator, HA database tuning & migrations, zero-downtime rollouts, observability & CI/CD |
+| 🏆 **[Level 4: Hands-On DevOps Challenges](docs/guides/04-hands-on-devops-challenges.md)** | Lab Exercises | 10 progressive hands-on lab challenges with verification steps and solution walkthroughs |
+| 🛠️ **[DevOps Troubleshooting Guide & Runbook](docs/guides/troubleshooting-guide.md)** | Triage | Diagnostic flowcharts and resolutions for CrashLoopBackOff, OOMKilled, probe failures, and database issues |
+
+---
+
 ## Quick Start
 
 ### Prerequisites
