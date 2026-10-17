@@ -88,8 +88,8 @@ kubectl get pods -n devops-dashboard -l app.kubernetes.io/name=auth
 kubectl port-forward svc/auth 4001:4001 -n devops-dashboard
 
 # Terminal 2 — hit the health endpoint
-curl -s http://localhost:4001/actuator/health | jq .
-# Expected: {"status":"UP"}
+curl -s http://localhost:4001/health | jq .
+# Expected: {"status":"ok","service":"auth"}
 ```
 
 ### 2.3 Login smoke test
@@ -97,7 +97,7 @@ curl -s http://localhost:4001/actuator/health | jq .
 ```bash
 curl -s -X POST http://localhost:4001/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"admin"}' | jq .
+  -d '{"email":"admin@devops.local","password":"password123"}' | jq .
 # Expected: JWT token in response body
 ```
 
@@ -122,8 +122,8 @@ kubectl get pods -n devops-dashboard -l app.kubernetes.io/name=api
 ```bash
 kubectl port-forward svc/api 4000:4000 -n devops-dashboard &
 
-curl -s http://localhost:4000/actuator/health | jq .
-# Expected: {"status":"UP"}
+curl -s http://localhost:4000/health | jq .
+# Expected: {"status":"ok","service":"api"}
 ```
 
 ### 3.3 Authenticated API call
@@ -157,7 +157,7 @@ kubectl get pods -n devops-dashboard -l app.kubernetes.io/name=deployment-svc
 ```bash
 kubectl port-forward svc/deployment-svc 4002:4002 -n devops-dashboard &
 
-curl -s http://localhost:4002/actuator/health | jq .
+curl -s http://localhost:4002/health | jq .
 ```
 
 ### 4.3 Logs
@@ -181,7 +181,7 @@ kubectl get pods -n devops-dashboard -l app.kubernetes.io/name=notification
 ```bash
 kubectl port-forward svc/notification 4003:4003 -n devops-dashboard &
 
-curl -s http://localhost:4003/actuator/health | jq .
+curl -s http://localhost:4003/health | jq .
 ```
 
 ### 5.3 Logs
@@ -208,7 +208,7 @@ kubectl get pods -n devops-dashboard -l app.kubernetes.io/name=worker
 ```bash
 kubectl port-forward svc/worker 4004:4004 -n devops-dashboard &
 
-curl -s http://localhost:4004/actuator/health | jq .
+curl -s http://localhost:4004/health | jq .
 ```
 
 ### 6.3 Logs

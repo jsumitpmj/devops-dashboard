@@ -1,5 +1,6 @@
 package com.devops.dashboard.shared.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -12,6 +13,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "deployments")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Deployment {
 
     @Id

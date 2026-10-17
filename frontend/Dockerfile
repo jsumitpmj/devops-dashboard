@@ -6,6 +6,7 @@ COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm install
 
 COPY frontend/ .
+RUN mkdir -p /app/public
 
 # Build-time env vars so Next.js bakes correct service URLs into routes-manifest.json
 ARG NEXT_PUBLIC_API_URL=http://api:4000
